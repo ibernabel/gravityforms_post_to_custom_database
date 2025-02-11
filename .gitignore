@@ -1,0 +1,64 @@
+
+./prod-plugin.ph
+./conexion.php
+./gf_post_to_bd.old.php
+.env
+
+# Dependencies
+/node_modules
+/vendor
+/bower_components
+
+# IDE and editors
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+.project
+.settings
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+/tmp
+/temp
+.DS_Store
+Thumbs.db
+
+# Build and dist
+/dist
+/build
+/out
+
+# Environment files
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*
+
+# Cache and compiled files
+*.cache
+*.compiled
+*.min.*
+*.map
+
+# Testing
+/coverage
+.nyc_output
+/cypress/videos
+/cypress/screenshots
+
+# Package files
+package-lock.json
+yarn.lock
+composer.lock
+
+# Misc
+*.bak
+*.swp
+*~
