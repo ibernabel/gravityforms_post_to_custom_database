@@ -1,127 +1,139 @@
-# Gravity Forms - Publicar en Base de Datos Personalizada
+# Gravity Forms - Post to Custom Database
 
-Un plugin de WordPress que captura datos de solicitudes de préstamo desde Gravity Forms y los envía a una base de datos de verificación.
+Plugin para WordPress que permite conectar formularios específicos de Gravity Forms con una base de datos externa personalizada. Ideal para sistemas que necesitan mantener los datos de formularios en una base de datos separada de WordPress.
 
 ## Descripción
 
-Este plugin se integra con Gravity Forms para procesar solicitudes de préstamo y almacenarlas en una tabla de base de datos personalizada. Incluye características como:
+Este plugin está diseñado específicamente para capturar datos de solicitudes desde formularios de Gravity Forms y enviarlos a una base de datos externa. Es especialmente útil cuando necesitas:
 
-- Captura automática de datos desde formularios de Gravity Forms especificados
-- Integración con una base de datos personalizada
-- Filtrado de solicitudes por provincia
-- Validación de identificación duplicada
-- Saneamiento y formato de datos
-- Mapeo configurable de campos del formulario
+- Mantener los datos de formularios en una base de datos separada
+- Procesar solicitudes con validaciones específicas
+- Manejar datos sensibles en un ambiente controlado
+- Integrar WordPress con sistemas externos
 
-## Requisitos Previos
+## Características
+
+- Conexión segura con base de datos externa
+- Validación de datos antes de la inserción
+- Sistema de logging para debugging
+- Página de prueba de conexión en el panel de administración
+- Manejo de errores robusto
+- Sanitización automática de datos
+- Verificación de registros duplicados
+
+## Requisitos
 
 - WordPress 5.5 o superior
-- Plugin Gravity Forms instalado y activado
-- Base de datos MySQL/MariaDB para almacenar las solicitudes
 - PHP 7.4 o superior
+- Gravity Forms instalado y activado
+- Acceso a una base de datos MySQL externa
+- Permisos para modificar wp-config.php
 
 ## Instalación
 
-1. Descarga los archivos del plugin
+1. Descarga el plugin desde el repositorio
 2. Sube la carpeta del plugin al directorio `/wp-content/plugins/`
-3. Activa el plugin desde el menú 'Plugins' en WordPress
-4. Configura los ajustes de conexión a la base de datos
+3. Activa el plugin desde el panel de plugins en WordPress
+4. Configura las credenciales de la base de datos (ver sección de configuración)
 
 ## Configuración
 
-### Conexión a la Base de Datos
+### Método 1: Usando wp-config.php (Recomendado)
 
-Puedes configurar la conexión a la base de datos de dos maneras:
-
-1. Usando variables de entorno (archivo .env):
-
-```
-LOANS_DB_HOST=tu_host_de_base_de_datos
-LOANS_DB_USER=tu_usuario_de_base_de_datos
-LOANS_DB_PASSWORD=tu_contraseña_de_base_de_datos
-LOANS_DB_NAME=tu_nombre_de_base_de_datos
-```
-
-2. Usando constantes en wp-config.php:
+Añade las siguientes constantes a tu archivo `wp-config.php`:
 
 ```php
-define('LOANS_DB_HOST', 'tu_host_de_base_de_datos');
-define('LOANS_DB_USER', 'tu_usuario_de_base_de_datos');
-define('LOANS_DB_PASSWORD', 'tu_contraseña_de_base_de_datos');
-define('LOANS_DB_NAME', 'tu_nombre_de_base_de_datos');
+define('LOANS_DB_HOST', 'tu_host');
+define('LOANS_DB_USER', 'tu_usuario');
+define('LOANS_DB_PASSWORD', 'tu_contraseña');
+define('LOANS_DB_NAME', 'nombre_base_datos');
 ```
 
-### Mapeo de Campos del Formulario
+### Método 2: Usando opciones de WordPress
 
-El plugin asigna los campos de Gravity Forms a columnas de la base de datos. Debes ajustar los ID de los campos en el método `prepararDatos()` para que coincidan con la estructura de tu formulario:
+El plugin automáticamente creará las siguientes opciones en WordPress durante la activación:
+- gf_db_host
+- gf_db_user
+- gf_db_password
+- gf_db_name
 
+## Adaptación de Campos del Formulario
+
+El plugin está configurado para mapear campos específicos del formulario a la base de datos. Para adaptar los campos:
+
+1. Identifica los IDs de los campos en tu formulario de Gravity Forms
+2. Modifica el método `prepararDatos()` en la clase principal
+3. Asegúrate que los nombres de las columnas en tu tabla `formulario` coincidan con las keys del array
+
+Ejemplo de mapeo:
 ```php
-'nombre_y_apellido' => $entry["21.3"],  // ID del campo para nombre
-'cedula' => $entry[29],                 // ID del campo para número de identificación
-'telefono_celular' => $entry[23],       // ID del campo para teléfono móvil
-// ... y así sucesivamente
+'nombre_y_apellido' => $entry["21.3"],  // 21.3 es el ID del campo en Gravity Forms
+'telefono' => $entry[23],               // 23 es el ID del campo
 ```
 
-### Consideraciones Importantes
+## Herramientas de Diagnóstico
 
-1. **IDs de Formulario**: Actualiza la constante `FORMS_ID` para que coincida con tus formularios de Gravity Forms:
+### Página de Prueba de Conexión
 
-```php
-private const FORMS_ID = [15, 28];  // Agrega los ID de tus formularios aquí
-```
+Accede a la página de prueba desde: `Herramientas > GF Database Test`
 
-2. **Filtrado por Provincia**: Modifica la constante `PROVINCIAS_PERMITIDAS` para que coincida con las provincias permitidas:
+Esta página muestra:
+- Estado de la conexión
+- Logs de MySQL
+- Últimas 50 entradas del log de debug
 
-```php
-private const PROVINCIAS_PERMITIDAS = ['Distrito Nacional', 'Santo Domingo'];
-```
+### Sistema de Logs
 
-3. **Tabla de Base de Datos**: Asegúrate de que tu base de datos tenga una tabla llamada 'formulario' con las columnas correspondientes a todos los campos en el método `prepararDatos()`.
+El plugin mantiene un archivo de log en:
+`wp-content/debug-gf-database.log`
 
-## Uso
+Los logs incluyen:
+- Errores de conexión
+- Problemas de inserción de datos
+- Validaciones fallidas
+- Información de debugging
 
-Una vez configurado, el plugin procesa automáticamente las solicitudes enviadas desde los formularios de Gravity Forms especificados. Realizará lo siguiente:
+## Seguridad
 
-1. Capturar los datos de envío del formulario
-2. Validar la provincia del solicitante
-3. Verificar identificaciones duplicadas
-4. Formatear y sanear los datos
-5. Almacenar la información en la base de datos personalizada
+- Todos los datos son sanitizados antes de la inserción
+- Las consultas utilizan prepared statements
+- Las credenciales de la base de datos están protegidas
+- Se implementa validación de roles y capacidades
 
-## Solución de Problemas
+## Limitaciones
 
-El plugin registra errores en el log de errores de WordPress. Algunos problemas comunes incluyen:
+- Solo funciona con formularios específicos (IDs configurados en FORMS_ID)
+- Requiere una estructura específica en la tabla de la base de datos
+- Las provincias permitidas están hardcodeadas (modificar PROVINCIAS_PERMITIDAS)
 
-- Falta de configuración de la base de datos
-- IDs de campos de formulario incorrectos
-- Fallos en la conexión con la base de datos
-- Estructura de tabla incorrecta o faltante
+## Contribución
 
-Revisa el log de depuración de WordPress para mensajes de error detallados:
+Las contribuciones son bienvenidas. Por favor:
 
-```php
-define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
-```
-
-## Consideraciones de Seguridad
-
-1. Protege tus credenciales de base de datos
-2. Usa contraseñas seguras
-3. Restringe los permisos del usuario de la base de datos
-4. Mantén actualizado WordPress y todos los plugins
-5. Realiza copias de seguridad de tu base de datos regularmente
+1. Haz fork del repositorio
+2. Crea una rama para tu feature
+3. Envía un pull request
 
 ## Licencia
 
-Este plugin está licenciado bajo la GPL v2 o posterior.
+Este proyecto está licenciado bajo MIT License.
 
-## Soporte
+Copyright (c) 2025 Idequel Bernabel
 
-Para soporte, por favor crea un issue en el repositorio de GitHub: [https://github.com/ibernabel](https://github.com/ibernabel)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-## Contribuciones
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-¡Las contribuciones son bienvenidas! No dudes en enviar un Pull Request.
-
-Plugin personalizado para wordpress que recibe los parametros o entradas enviadas desde un formulario de Gravity Forms y las inserta en una tabla de Base de Datos de MySQL.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

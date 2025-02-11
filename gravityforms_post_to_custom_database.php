@@ -2,9 +2,9 @@
 
 /**
  * Plugin Name: Gravity Forms - Post to Custom Database
- * Plugin URI: https://github.com/ibernabel
+ * Plugin URI: https://github.com/ibernabel/gravityforms_post_to_custom_database
  * Description: Plugin para capturar datos de solicitudes de préstamos desde Gravity Forms y enviarlos a la base de datos del sistema de verificación.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Idequel Bernabel
  * Author URI: https://github.com/ibernabel
  * Requires at least: 5.5
